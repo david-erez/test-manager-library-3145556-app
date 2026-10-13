@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, LibraryBig, LogOut, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, LibraryBig, LogOut, Repeat2, Search, Settings2, SlidersHorizontal, UsersRound } from 'lucide-react'
 import { api } from './api'
+import AdminView from './AdminView'
+import CirculationView from './CirculationView'
+import MembersView from './MembersView'
 import './App.css'
 
 const SESSION_KEY = 'manager-library-session'
@@ -31,6 +34,7 @@ function App() {
   const [search, setSearch] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [page, setPage] = useState(1)
+  const [activeSection, setActiveSection] = useState('catalog')
   const [isLoading, setIsLoading] = useState(false)
   const [catalogError, setCatalogError] = useState('')
   const token = session?.access_token
@@ -186,10 +190,20 @@ function App() {
         </div>
         <div className="sidebar-section-label">BIBLIOTECA</div>
         <nav aria-label="Navegación principal">
-          <a className="nav-link nav-link-active" href="#catalog" aria-current="page">
-            <BookOpen aria-hidden="true" size={18} />
-            <span>Catálogo</span>
-          </a>
+          <button className={`nav-link ${activeSection === 'catalog' ? 'nav-link-active' : ''}`} onClick={() => setActiveSection('catalog')} type="button">
+            <BookOpen aria-hidden="true" size={18} /><span>Catálogo</span>
+          </button>
+          <button className={`nav-link ${activeSection === 'members' ? 'nav-link-active' : ''}`} onClick={() => setActiveSection('members')} type="button">
+            <UsersRound aria-hidden="true" size={18} /><span>Socios</span>
+          </button>
+          <button className={`nav-link ${activeSection === 'circulation' ? 'nav-link-active' : ''}`} onClick={() => setActiveSection('circulation')} type="button">
+            <Repeat2 aria-hidden="true" size={18} /><span>Circulación</span>
+          </button>
+          {session.role === 'admin' && (
+            <button className={`nav-link ${activeSection === 'admin' ? 'nav-link-active' : ''}`} onClick={() => setActiveSection('admin')} type="button">
+              <Settings2 aria-hidden="true" size={18} /><span>Gestión</span>
+            </button>
+          )}
         </nav>
         <div className="sidebar-bottom">
           <div className="user-chip">
@@ -203,7 +217,7 @@ function App() {
         </div>
       </aside>
 
-      <main className="catalog-main" id="catalog">
+      {activeSection === 'members' ? <MembersView token={token} /> : activeSection === 'circulation' ? <CirculationView token={token} role={session.role} /> : activeSection === 'admin' && session.role === 'admin' ? <AdminView token={token} categories={categories} /> : <main className="catalog-main" id="catalog">
         <header className="page-header">
           <div>
             <p className="eyebrow">COLECCIÓN</p>
@@ -273,7 +287,7 @@ function App() {
             <button aria-label="Página siguiente" className="icon-button" disabled={page >= totalPages || isLoading} onClick={() => setPage(page + 1)} title="Página siguiente" type="button"><ArrowRight aria-hidden="true" size={17} /></button>
           </div>
         </footer>
-      </main>
+      </main>}
     </div>
   )
 }
